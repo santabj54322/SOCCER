@@ -83,12 +83,31 @@ function resetPositions(){
 
 /* ---------- Host physics ---------- */
 function launch(p,a,sp,dur,type){p.dash=NOW+dur;p.dtype=type;p.face=a;p.s.body.setVelocity(Math.cos(a)*sp,Math.sin(a)*sp)}
-function ballHit(s,bl){
-  const p=s.pd;if(mode!=='host'||NOW<p.ghost||NOW<p.stun)return;
-  const[ux,uy]=nz(bl.x-s.x,bl.y-s.y),tackle=NOW<p.dash&&p.dtype==='t';
-  if(!tackle&&p.inp[4]){bl.setPosition(s.x+ux*(PR+BR),s.y+uy*(PR+BR));return}   // ball hold: no kick
-  const sp=tackle?800:Math.max(Math.hypot(s.body.velocity.x,s.body.velocity.y)*1.2,120);
-  bl.body.setVelocity(ux*sp,uy*sp);bl.setPosition(s.x+ux*(PR+BR),s.y+uy*(PR+BR));
+function ballHit(a,b){
+  if(mode!=='host' || !started) return;
+
+  const s = a && a.pd ? a : b && b.pd ? b : null;
+  const bl = s === a ? b : a;
+
+  if(!s || !bl) return;
+
+  const p = s.pd;
+  if(NOW < p.ghost || NOW < p.stun) return;
+
+  const [ux,uy] = nz(bl.x - s.x, bl.y - s.y);
+  const tackle = NOW < p.dash && p.dtype === 't';
+
+  if(!tackle && p.inp[4]){
+    bl.setPosition(s.x + ux*(PR+BR), s.y + uy*(PR+BR));
+    return;
+  }
+
+  const sp = tackle
+    ? 800
+    : Math.max(Math.hypot(s.body.velocity.x, s.body.velocity.y) * 1.2, 120);
+
+  bl.body.setVelocity(ux * sp, uy * sp);
+  bl.setPosition(s.x + ux*(PR+BR), s.y + uy*(PR+BR));
 }
 function tackleHit(a,b){
   if(a.team!==b.team&&NOW<a.dash&&a.dtype==='t'&&NOW>=b.stun){
